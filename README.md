@@ -1,70 +1,34 @@
-# Getting Started with Create React App
+The Interview
+The Interview is a responsive blog platform where users can share their experiences on getting started in various career fields. This app is built with a modern tech stack, using React for the frontend, Firebase for backend services, and is optimized for both desktop and mobile use.
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Tech Stack
+Frontend: React (with React Router, Styled-Components/Emotion, and Material UI)
+Backend: Node.js + Express.js, hosted on Firebase Functions
+Database: Firebase Firestore
+Authentication: Firebase Authentication
+Hosting: Vercel/Netlify (Frontend), Firebase Hosting (Backend & Functions)
+Development Steps
+Initialize the Project
 
-## Available Scripts
+Use npx create-react-app the-interview to create a new React app.
+Set Up Firebase
 
-In the project directory, you can run:
+Create a new Firebase project and enable Firestore, Firebase Authentication, and Firebase Functions.
+Frontend Development
 
-### `npm start`
+Install necessary libraries: npm install react-router-dom @mui/material styled-components axios
+Configure routing, set up responsive layouts with Material UI, and build reusable components.
+Backend Development (Node.js + Firebase Functions)
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Set up an Express app in Firebase Functions.
+Implement endpoints for creating posts, fetching posts, managing comments, and likes.
+Database (Firestore)
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+Create collections for Users, Posts, and Comments, with appropriate Firestore security rules.
+Authentication
 
-### `npm test`
+Configure Firebase Authentication to handle user logins and signups.
+Deployment
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Deploy the frontend on Vercel or Netlify.
+Deploy backend on Firebase Functions, and connect a custom domain if desired.
