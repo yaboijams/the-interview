@@ -10,6 +10,7 @@ import Profile from './pages/Profile';
 import Login from './pages/Login';
 import { lightTheme, darkTheme } from './theme';
 import { AuthProvider } from './contexts/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -28,8 +29,10 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/post/:id" element={<BlogPost />} />
           <Route path="/create" element={<CreatePost />} />
-          <Route path="/profile" element={<Profile />} />
           <Route path="/login" element={<Login />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="/profile" element={<Profile />} />
+          </Route>
         </Routes>
       </Router>
     </ThemeProvider>

@@ -1,5 +1,6 @@
 // src/pages/Login.js
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth, db } from '../firebase';
 import { doc, setDoc } from 'firebase/firestore';
@@ -9,6 +10,7 @@ import AuthContainer from '../components/AuthContainer';
 function Login() {
   const [mode, setMode] = useState('login');
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   const handleToggleMode = () => {
     setMode((prevMode) => (prevMode === 'login' ? 'signup' : 'login'));
@@ -18,23 +20,23 @@ function Login() {
     setError(null);
     try {
       if (mode === 'signup') {
-        // Create the user with email and password
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
-        // Save additional user info (first name, last name) to Firestore
         await setDoc(doc(db, 'users', user.uid), {
           firstName,
           lastName,
           email: user.email,
           createdAt: new Date(),
         });
+
+        navigate('/profile');
       } else {
-        // Sign in if already registered
         await signInWithEmailAndPassword(auth, email, password);
+        navigate('/profile');
       }
     } catch (error) {
-      setError(error.message);
+      handleAuthError(error);
     }
   };
 
@@ -42,8 +44,32 @@ function Login() {
     const provider = new GoogleAuthProvider();
     try {
       await signInWithPopup(auth, provider);
+      navigate('/profile');
     } catch (error) {
-      setError(error.message);
+      handleAuthError(error);
+    }
+  };
+
+  const handleAuthError = (error) => {
+    switch (error.code) {
+      case 'auth/user-not-found':
+        setError('No account found with this email. Please sign up first.');
+        break;
+      case 'auth/wrong-password':
+        setError('Incorrect password. Please try again.');
+        break;
+      case 'auth/email-already-in-use':
+        setError('This email is already registered. Please log in.');
+        break;
+      case 'auth/weak-password':
+        setError('Password should be at least 6 characters.');
+        break;
+      case 'auth/invalid-email':
+        setError('Please enter a valid email address.');
+        break;
+      default:
+        setError('Something went wrong. Please try again later.');
+        break;
     }
   };
 
@@ -54,6 +80,7 @@ function Login() {
         onToggleMode={handleToggleMode}
         onSubmit={handleAuthSubmit}
         onGoogleSignIn={handleGoogleSignIn}
+        error={error} // Pass error as a prop
       />
       <div id="recaptcha-container"></div>
     </AuthContainer>

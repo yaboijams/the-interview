@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { TextField, Button, Box, Typography, CircularProgress } from '@mui/material';
 
-function AuthForm({ mode, onToggleMode, onSubmit, onGoogleSignIn, onPhoneSignIn, onVerifyOtp }) {
+function AuthForm({ mode, onToggleMode, onSubmit, onGoogleSignIn, onPhoneSignIn, onVerifyOtp, error }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
@@ -10,16 +10,16 @@ function AuthForm({ mode, onToggleMode, onSubmit, onGoogleSignIn, onPhoneSignIn,
   const [confirmPassword, setConfirmPassword] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [otp, setOtp] = useState('');
-  const [error, setError] = useState(null);
+  const [localError, setLocalError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isOtpSent, setIsOtpSent] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null);
+    setLocalError(null);
 
     if (mode === 'signup' && password !== confirmPassword) {
-      setError('Passwords do not match');
+      setLocalError('Passwords do not match');
       return;
     }
 
@@ -31,7 +31,7 @@ function AuthForm({ mode, onToggleMode, onSubmit, onGoogleSignIn, onPhoneSignIn,
         await onSubmit({ email, password });
       }
     } catch (error) {
-      setError(error.message);
+      setLocalError(error.message);
     } finally {
       setLoading(false);
     }
@@ -42,7 +42,7 @@ function AuthForm({ mode, onToggleMode, onSubmit, onGoogleSignIn, onPhoneSignIn,
       await onPhoneSignIn(phoneNumber);
       setIsOtpSent(true);
     } catch (error) {
-      setError('Failed to send OTP. Please check the phone number and try again.');
+      setLocalError('Failed to send OTP. Please check the phone number and try again.');
     }
   };
 
@@ -51,7 +51,7 @@ function AuthForm({ mode, onToggleMode, onSubmit, onGoogleSignIn, onPhoneSignIn,
     try {
       await onVerifyOtp(otp);
     } catch (error) {
-      setError('Invalid OTP. Please try again.');
+      setLocalError('Invalid OTP. Please try again.');
     }
   };
 
@@ -76,10 +76,10 @@ function AuthForm({ mode, onToggleMode, onSubmit, onGoogleSignIn, onPhoneSignIn,
         {mode === 'login' ? 'Welcome Back' : 'Create an Account'}
       </Typography>
 
-      {error && (
+      {(localError || error) && (
         <Box sx={{ backgroundColor: 'rgba(255, 0, 0, 0.1)', padding: 2, borderRadius: 2 }}>
           <Typography color="error" variant="body2" sx={{ textAlign: 'center' }}>
-            {error}
+            {localError || error}
           </Typography>
         </Box>
       )}

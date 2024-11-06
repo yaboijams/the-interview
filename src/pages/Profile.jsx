@@ -1,8 +1,10 @@
 // src/pages/Profile.js
 import React, { useEffect, useState } from 'react';
-import { Container, Typography } from '@mui/material';
-import { db } from '../firebase';
+import { useNavigate } from 'react-router-dom';
+import { Container, Typography, Button } from '@mui/material';
+import { db, auth } from '../firebase';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { signOut } from 'firebase/auth';
 import { useAuth } from '../contexts/AuthContext';
 import UserInfo from '../components/UserInfo';
 import UserPosts from '../components/UserPosts';
@@ -10,6 +12,7 @@ import ProfileStats from '../components/ProfileStats';
 
 function Profile() {
   const { currentUser } = useAuth();
+  const navigate = useNavigate();
   const [user, setUser] = useState({
     name: 'Test User',
     bio: 'This is a test bio for the profile page.',
@@ -20,6 +23,13 @@ function Profile() {
     { id: 2, title: 'Test Post 2', date: 'February 10, 2023' },
   ]);
   const [stats, setStats] = useState({ postCount: 2, readersCount: 20, likesCount: 10, commentsCount: 5 });
+
+  // Redirect to login if user is not authenticated
+  useEffect(() => {
+    if (!currentUser) {
+      navigate('/login');
+    }
+  }, [currentUser, navigate]);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -52,6 +62,11 @@ function Profile() {
     fetchUserData();
   }, [currentUser]);
 
+  const handleLogout = async () => {
+    await signOut(auth);
+    navigate('/login');
+  };
+
   const handleEditProfile = () => {
     console.log('Edit profile clicked');
   };
@@ -61,6 +76,22 @@ function Profile() {
       <Typography variant="h4" gutterBottom sx={{ fontWeight: 700, mb: 4 }}>
         User Profile
       </Typography>
+      <Button
+        variant="outlined"
+        onClick={handleLogout}
+        sx={{
+          mb: 4,
+          color: 'primary.main',
+          borderColor: 'primary.main',
+          textTransform: 'none',
+          '&:hover': {
+            backgroundColor: 'primary.light',
+            borderColor: 'primary.dark',
+          },
+        }}
+      >
+        Log Out
+      </Button>
       <UserInfo
         name={user.name}
         bio={user.bio}
