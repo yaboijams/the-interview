@@ -1,18 +1,41 @@
 // src/components/PostList.js
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import PostCard from './PostCard';
-import { Grid } from '@mui/material';
-
-const samplePosts = [
-  { id: 1, title: 'Breaking into Tech', description: 'How I landed my first tech job without a CS degree.' },
-  { id: 2, title: 'Navigating Career Changes', description: 'A guide to switching fields and finding your passion.' },
-  { id: 3, title: 'The Value of Networking', description: 'Why building connections is crucial in every career.' },
-];
+import { Grid, CircularProgress } from '@mui/material';
+import { db } from '../firebase';
+import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 
 function PostList() {
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      setLoading(true);
+      try {
+        const q = query(collection(db, 'posts'), orderBy('createdAt', 'desc'));
+        const querySnapshot = await getDocs(q);
+        const fetchedPosts = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setPosts(fetchedPosts);
+      } catch (error) {
+        console.error('Error fetching posts:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPosts();
+  }, []);
+
+  if (loading) {
+    return <CircularProgress sx={{ display: 'block', margin: 'auto' }} />;
+  }
+
   return (
     <Grid container spacing={4} justifyContent="center">
-      {samplePosts.map((post) => (
+      {posts.map((post) => (
         <Grid item xs={12} sm={6} md={4} key={post.id}>
           <PostCard post={post} />
         </Grid>

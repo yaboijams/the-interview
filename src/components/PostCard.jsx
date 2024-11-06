@@ -1,17 +1,28 @@
 // src/components/PostCard.js
 import React from 'react';
-import { Card, CardContent, Typography, CardActions, Button } from '@mui/material';
+import { Card, CardContent, Typography, CardActions, Button, Box } from '@mui/material';
 import { Link } from 'react-router-dom';
 
 function PostCard({ post }) {
   return (
-    <Card sx={{ maxWidth: 345, margin: '16px auto', borderRadius: 2, boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)', transition: 'transform 0.2s, box-shadow 0.2s', '&:hover': { transform: 'translateY(-5px)', boxShadow: '0px 6px 15px rgba(0, 0, 0, 0.15)' }, }}>
+    <Card
+      sx={{
+        boxShadow: 4,
+        borderRadius: 3,
+        transition: 'transform 0.2s',
+        '&:hover': { transform: 'scale(1.02)' },
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+      }}
+    >
       <CardContent>
-        <Typography variant="h5" component="div" sx={{ fontWeight: 'bold' }}>
+        <Typography variant="h6" component="div" sx={{ fontWeight: 700, color: 'primary.main', mb: 1 }}>
           {post.title}
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-          {post.description}
+        <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6, mb: 2 }}>
+          {post.description.length > 100 ? post.description.slice(0, 100) + '...' : post.description}
         </Typography>
       </CardContent>
       <CardActions>

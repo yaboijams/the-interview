@@ -1,8 +1,9 @@
 // src/components/UserPosts.js
 import React from 'react';
 import { Box, Typography, List, ListItem, ListItemText, Divider } from '@mui/material';
+import { Link } from 'react-router-dom';
 
-function UserPosts({ posts }) {
+function UserPosts({ posts = [{ id: 1, title: 'Sample Post', date: 'January 1, 2023' }] }) {
   return (
     <Box
       sx={{
@@ -22,8 +23,8 @@ function UserPosts({ posts }) {
             <React.Fragment key={post.id}>
               <ListItem
                 button
-                component="a"
-                href={`/post/${post.id}`}
+                component={Link}
+                to={`/post/${post.id}`}
                 sx={{
                   '&:hover': {
                     backgroundColor: 'background.default',

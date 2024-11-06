@@ -9,6 +9,9 @@ function Home() {
       <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold' }}>
         Welcome to The Interview Blog
       </Typography>
+      <Typography variant="subtitle1" color="text.secondary" sx={{ marginBottom: '24px' }}>
+        Discover inspiring stories from individuals across different career paths.
+      </Typography>
       <PostList />
     </Container>
   );

@@ -2,7 +2,7 @@
 import React from 'react';
 import { Box, Avatar, Typography, Button } from '@mui/material';
 
-function UserInfo({ name, bio, profilePicture, onEdit }) {
+function UserInfo({ name = 'Test User', bio = 'This is a test bio for the user.', profilePicture = '/path/to/default-profile.jpg', onEdit }) {
   return (
     <Box
       sx={{

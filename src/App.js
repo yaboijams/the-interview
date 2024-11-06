@@ -9,6 +9,7 @@ import CreatePost from './pages/CreatePost';
 import Profile from './pages/Profile';
 import Login from './pages/Login';
 import { lightTheme, darkTheme } from './theme';
+import { AuthProvider } from './contexts/AuthContext';
 
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -18,6 +19,7 @@ function App() {
   };
 
   return (
+    <AuthProvider>
     <ThemeProvider theme={isDarkMode ? darkTheme : lightTheme}>
       <CssBaseline />
       <Router>
@@ -31,6 +33,7 @@ function App() {
         </Routes>
       </Router>
     </ThemeProvider>
+    </AuthProvider>
   );
 }
 
