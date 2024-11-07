@@ -32,7 +32,7 @@ function Navbar({ toggleTheme, isDarkMode }) {
       </Typography>
       <Divider sx={{ mb: 2 }} />
 
-      {['Home', 'Create Post', 'Profile'].map((text, index) => (
+      {['Home', 'Create', 'Profile'].map((text, index) => (
         <ListItem
           button
           component={Link}

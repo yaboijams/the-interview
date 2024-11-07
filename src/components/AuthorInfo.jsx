@@ -1,9 +1,37 @@
 // src/components/AuthorInfo.js
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Avatar, Typography, useTheme } from '@mui/material';
+import { db } from '../firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
-function AuthorInfo() {
+function AuthorInfo({ userId }) {
   const theme = useTheme();
+  const [author, setAuthor] = useState({
+    name: '',
+    profilePicture: '',
+    currentCompany: '',
+    currentPosition: '',
+    bio: '',
+  });
+
+  useEffect(() => {
+    const fetchAuthorInfo = async () => {
+      if (userId) {
+        try {
+          const userRef = doc(db, 'users', userId);
+          const userSnap = await getDoc(userRef);
+          if (userSnap.exists()) {
+            setAuthor(userSnap.data());
+          } else {
+            console.error('No such document!');
+          }
+        } catch (error) {
+          console.error('Error fetching author info:', error);
+        }
+      }
+    };
+    fetchAuthorInfo();
+  }, [userId]);
 
   return (
     <Box
@@ -18,14 +46,25 @@ function AuthorInfo() {
         boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
       }}
     >
-      <Avatar alt="Author Name" src="/path/to/avatar.jpg" sx={{ width: 64, height: 64, mr: 2 }} />
+      <Avatar
+        alt={author.name}
+        src={author.profilePicture || '/default-avatar.jpg'}
+        sx={{ width: 64, height: 64, mr: 2 }}
+      />
       <Box>
         <Typography variant="h6" sx={{ fontWeight: 600, color: theme.palette.text.primary }}>
-          Author Name
+          {author.name || 'Anonymous'}
         </Typography>
-        <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
-          Brief bio or description of the author. This could include their role, expertise, or anything relevant.
+        <Typography variant="body2" sx={{ color: theme.palette.text.secondary, mt: 0.5 }}>
+          {author.currentPosition && author.currentCompany
+            ? `${author.currentPosition} at ${author.currentCompany}`
+            : 'Position information unavailable'}
         </Typography>
+        {author.bio && (
+          <Typography variant="body2" sx={{ color: theme.palette.text.secondary, mt: 1 }}>
+            {author.bio}
+          </Typography>
+        )}
       </Box>
     </Box>
   );

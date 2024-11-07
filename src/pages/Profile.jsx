@@ -1,9 +1,9 @@
 // src/pages/Profile.js
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Container, Typography, Button } from '@mui/material';
+import { Container, Typography, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';
 import { db, auth } from '../firebase';
-import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { useAuth } from '../contexts/AuthContext';
 import UserInfo from '../components/UserInfo';
@@ -17,14 +17,28 @@ function Profile() {
     name: 'Test User',
     bio: 'This is a test bio for the profile page.',
     profilePicture: '/path/to/default-profile.jpg',
+    currentPosition: '',
+    currentCompany: '',
+    formerPosition: '',
+    formerCompany: '',
+    location: '',
   });
   const [posts, setPosts] = useState([
     { id: 1, title: 'Test Post 1', date: 'January 1, 2023' },
     { id: 2, title: 'Test Post 2', date: 'February 10, 2023' },
   ]);
   const [stats, setStats] = useState({ postCount: 2, readersCount: 20, likesCount: 10, commentsCount: 5 });
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    name: '',
+    bio: '',
+    currentPosition: '',
+    currentCompany: '',
+    formerPosition: '',
+    formerCompany: '',
+    location: '',
+  });
 
-  // Redirect to login if user is not authenticated
   useEffect(() => {
     if (!currentUser) {
       navigate('/login');
@@ -39,7 +53,17 @@ function Profile() {
         const userRef = doc(db, 'users', currentUser.uid);
         const userSnap = await getDoc(userRef);
         if (userSnap.exists()) {
-          setUser(userSnap.data());
+          const userData = userSnap.data();
+          setUser(userData);
+          setEditFormData({
+            name: userData.name,
+            bio: userData.bio,
+            currentPosition: userData.currentPosition,
+            currentCompany: userData.currentCompany,
+            formerPosition: userData.formerPosition,
+            formerCompany: userData.formerCompany,
+            location: userData.location,
+          });
         }
 
         const postsRef = collection(db, 'posts');
@@ -68,7 +92,33 @@ function Profile() {
   };
 
   const handleEditProfile = () => {
-    console.log('Edit profile clicked');
+    setEditModalOpen(true);
+  };
+
+  const handleEditFormChange = (e) => {
+    const { name, value } = e.target;
+    setEditFormData((prevData) => ({ ...prevData, [name]: value }));
+  };
+
+  const handleSaveProfile = async () => {
+    if (!currentUser) return;
+
+    try {
+      const userRef = doc(db, 'users', currentUser.uid);
+      await updateDoc(userRef, {
+        name: editFormData.name,
+        bio: editFormData.bio,
+        currentPosition: editFormData.currentPosition,
+        currentCompany: editFormData.currentCompany,
+        formerPosition: editFormData.formerPosition,
+        formerCompany: editFormData.formerCompany,
+        location: editFormData.location,
+      });
+      setUser((prevUser) => ({ ...prevUser, ...editFormData }));
+      setEditModalOpen(false);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+    }
   };
 
   return (
@@ -96,6 +146,11 @@ function Profile() {
         name={user.name}
         bio={user.bio}
         profilePicture={user.profilePicture}
+        currentPosition={user.currentPosition}
+        currentCompany={user.currentCompany}
+        formerPosition={user.formerPosition}
+        formerCompany={user.formerCompany}
+        location={user.location}
         onEdit={handleEditProfile}
       />
       <ProfileStats
@@ -105,6 +160,77 @@ function Profile() {
         commentsCount={stats.commentsCount}
       />
       <UserPosts posts={posts} />
+
+      {/* Edit Profile Modal */}
+      <Dialog open={editModalOpen} onClose={() => setEditModalOpen(false)}>
+        <DialogTitle>Edit Profile</DialogTitle>
+        <DialogContent>
+          <TextField
+            margin="dense"
+            label="Name"
+            fullWidth
+            name="name"
+            value={editFormData.name}
+            onChange={handleEditFormChange}
+          />
+          <TextField
+            margin="dense"
+            label="Bio"
+            fullWidth
+            multiline
+            rows={3}
+            name="bio"
+            value={editFormData.bio}
+            onChange={handleEditFormChange}
+          />
+          <TextField
+            margin="dense"
+            label="Current Position"
+            fullWidth
+            name="currentPosition"
+            value={editFormData.currentPosition}
+            onChange={handleEditFormChange}
+          />
+          <TextField
+            margin="dense"
+            label="Current Company"
+            fullWidth
+            name="currentCompany"
+            value={editFormData.currentCompany}
+            onChange={handleEditFormChange}
+          />
+          <TextField
+            margin="dense"
+            label="Former Position"
+            fullWidth
+            name="formerPosition"
+            value={editFormData.formerPosition}
+            onChange={handleEditFormChange}
+          />
+          <TextField
+            margin="dense"
+            label="Former Company"
+            fullWidth
+            name="formerCompany"
+            value={editFormData.formerCompany}
+            onChange={handleEditFormChange}
+          />
+          <TextField
+            margin="dense"
+            label="Location"
+            fullWidth
+            name="location"
+            value={editFormData.location}
+            onChange={handleEditFormChange}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditModalOpen(false)}>Cancel</Button>
+          <Button onClick={handleSaveProfile} variant="contained" color="primary">
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 }

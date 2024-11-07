@@ -1,9 +1,13 @@
 // src/components/PostForm.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TextField, Box, Typography, Divider, Tooltip } from '@mui/material';
+import { db } from '../firebase';
+import { doc, getDoc } from 'firebase/firestore';
+import { useAuth } from '../contexts/AuthContext';
 import SubmitButton from './SubmitButton';
 
 function PostForm({ onSubmit }) {
+  const { currentUser } = useAuth();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [company, setCompany] = useState('');
@@ -16,6 +20,28 @@ function PostForm({ onSubmit }) {
   const [reflections, setReflections] = useState('');
   const [futureGoals, setFutureGoals] = useState('');
   const [advice, setAdvice] = useState('');
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (currentUser) {
+        const userRef = doc(db, 'users', currentUser.uid);
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists()) {
+          const userData = userSnap.data();
+          
+          setCompany(userData.currentCompany || '');
+          setPosition(userData.currentPosition || '');
+          
+          console.log('Autofilled Fields:', {
+            company: userData.currentCompany || '',
+            position: userData.currentPosition || '',
+          });
+        }
+      }
+    };
+    
+    fetchUserData();
+  }, [currentUser]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -33,7 +59,6 @@ function PostForm({ onSubmit }) {
       futureGoals,
       advice,
     });
-    // Clear form fields after submission
     setTitle('');
     setDescription('');
     setCompany('');
@@ -73,7 +98,7 @@ function PostForm({ onSubmit }) {
           sx={{ backgroundColor: 'background.default' }}
         />
       </Tooltip>
-      
+
       {/* Company and Position */}
       <Divider sx={{ my: 3 }} />
       <Typography variant="h6" sx={{ fontWeight: 600 }}>Current Position</Typography>
