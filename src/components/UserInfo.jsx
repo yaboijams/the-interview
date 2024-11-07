@@ -1,8 +1,6 @@
-// src/components/UserInfo.js
 import React, { useRef, useState } from 'react';
 import { Box, Avatar, Typography, Button, CircularProgress } from '@mui/material';
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '../firebase';
+import { db } from '../firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -15,7 +13,7 @@ function UserInfo({
   formerPosition = 'Intern',
   formerCompany = 'OldCompany',
   location = 'San Francisco, CA',
-  onEdit
+  onEdit,
 }) {
   const { currentUser } = useAuth();
   const [uploading, setUploading] = useState(false);
@@ -26,32 +24,37 @@ function UserInfo({
     fileInputRef.current.click();
   };
 
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      const storageRef = ref(storage, `profilePictures/${currentUser.uid}/${file.name}`);
-      const uploadTask = uploadBytesResumable(storageRef, file);
-
       setUploading(true);
-      uploadTask.on(
-        'state_changed',
-        null,
-        (error) => {
-          console.error('Error uploading file:', error);
-          setUploading(false);
-        },
-        async () => {
-          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-          setAvatarUrl(downloadURL);
-          setUploading(false);
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('userId', currentUser.uid);
 
-          // Update the user's profile picture in Firestore
-          if (currentUser) {
-            const userRef = doc(db, 'users', currentUser.uid);
-            await updateDoc(userRef, { profilePicture: downloadURL });
-          }
+        const response = await fetch(process.env.REACT_APP_UPLOAD_IMAGE_FUNCTION_URL, {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to upload image');
         }
-      );
+
+        const data = await response.json();
+        const downloadURL = data.downloadURL;
+        setAvatarUrl(downloadURL);
+
+        if (currentUser) {
+          const userRef = doc(db, 'users', currentUser.uid);
+          await updateDoc(userRef, { profilePicture: downloadURL });
+        }
+      } catch (error) {
+        console.error('Error uploading file:', error);
+      } finally {
+        setUploading(false);
+      }
     }
   };
 
