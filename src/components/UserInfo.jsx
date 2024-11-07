@@ -1,18 +1,60 @@
 // src/components/UserInfo.js
-import React from 'react';
-import { Box, Avatar, Typography, Button } from '@mui/material';
+import React, { useRef, useState } from 'react';
+import { Box, Avatar, Typography, Button, CircularProgress } from '@mui/material';
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { db, storage } from '../firebase';
+import { doc, updateDoc } from 'firebase/firestore';
+import { useAuth } from '../contexts/AuthContext';
 
 function UserInfo({
   name = 'Test User',
   bio = 'This is a test bio for the user.',
   profilePicture = '/path/to/default-profile.jpg',
-  currentPosition = 'Software Engineer', // Default position
-  currentCompany = 'TechCorp',           // Default company
-  formerPosition = 'Intern',             // Default former position
-  formerCompany = 'OldCompany',          // Default former company
-  location = 'San Francisco, CA',        // Default location
+  currentPosition = 'Software Engineer',
+  currentCompany = 'TechCorp',
+  formerPosition = 'Intern',
+  formerCompany = 'OldCompany',
+  location = 'San Francisco, CA',
   onEdit
 }) {
+  const { currentUser } = useAuth();
+  const [uploading, setUploading] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState(profilePicture);
+  const fileInputRef = useRef(null);
+
+  const handleAvatarClick = () => {
+    fileInputRef.current.click();
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const storageRef = ref(storage, `profilePictures/${currentUser.uid}/${file.name}`);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+
+      setUploading(true);
+      uploadTask.on(
+        'state_changed',
+        null,
+        (error) => {
+          console.error('Error uploading file:', error);
+          setUploading(false);
+        },
+        async () => {
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+          setAvatarUrl(downloadURL);
+          setUploading(false);
+
+          // Update the user's profile picture in Firestore
+          if (currentUser) {
+            const userRef = doc(db, 'users', currentUser.uid);
+            await updateDoc(userRef, { profilePicture: downloadURL });
+          }
+        }
+      );
+    }
+  };
+
   return (
     <Box
       sx={{
@@ -26,11 +68,40 @@ function UserInfo({
         gap: 3,
       }}
     >
-      <Avatar
-        alt={name}
-        src={profilePicture}
-        sx={{ width: 90, height: 90, border: '2px solid', borderColor: 'primary.main' }}
-      />
+      <Box sx={{ position: 'relative' }}>
+        <Avatar
+          alt={name}
+          src={avatarUrl}
+          sx={{
+            width: 90,
+            height: 90,
+            border: '2px solid',
+            borderColor: 'primary.main',
+            cursor: 'pointer',
+          }}
+          onClick={handleAvatarClick}
+        />
+        {uploading && (
+          <CircularProgress
+            size={90}
+            sx={{
+              color: 'primary.main',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              zIndex: 1,
+              opacity: 0.7,
+            }}
+          />
+        )}
+        <input
+          type="file"
+          ref={fileInputRef}
+          accept="image/*"
+          style={{ display: 'none' }}
+          onChange={handleFileChange}
+        />
+      </Box>
       <Box sx={{ flexGrow: 1 }}>
         <Typography variant="h5" sx={{ fontWeight: 700 }}>
           {name}

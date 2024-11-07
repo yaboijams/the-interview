@@ -1,13 +1,13 @@
 // src/pages/BlogPost.js
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Typography, Container, Divider, Box, CircularProgress, IconButton, useTheme } from '@mui/material';
-import ThumbUpIcon from '@mui/icons-material/ThumbUp';
+import { Typography, Container, Divider, Box, CircularProgress, IconButton, Menu, MenuItem, useTheme, Chip } from '@mui/material';
 import { db } from '../firebase';
-import { doc, getDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 import CommentsSection from '../components/CommentsSection';
 import AuthorInfo from '../components/AuthorInfo';
+import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
 
 function BlogPost() {
   const { id } = useParams();
@@ -15,8 +15,11 @@ function BlogPost() {
   const { currentUser } = useAuth();
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [likedByUser, setLikedByUser] = useState(false);
-  const [likesCount, setLikesCount] = useState(0);
+  const [reactionAnchor, setReactionAnchor] = useState(null);
+  const [userReaction, setUserReaction] = useState(null);
+  const [reactionsCount, setReactionsCount] = useState({});
+
+  const reactionOptions = ['👍', '❤️', '😂', '😮', '😢', '👏'];
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -27,8 +30,8 @@ function BlogPost() {
         if (postSnap.exists()) {
           const postData = postSnap.data();
           setPost(postData);
-          setLikesCount(postData.likes?.length || 0);
-          setLikedByUser(postData.likes?.includes(currentUser.uid));
+          setReactionsCount(postData.reactions || {});
+          setUserReaction(postData.userReactions?.[currentUser?.uid] || null);
         } else {
           console.error('No such document!');
         }
@@ -41,22 +44,33 @@ function BlogPost() {
     fetchPost();
   }, [id, currentUser]);
 
-  const handleLikeToggle = async () => {
+  const handleReactionClick = (event) => {
+    setReactionAnchor(event.currentTarget);
+  };
+
+  const handleReactionSelect = async (reaction) => {
     if (!currentUser) return;
 
+    const postRef = doc(db, 'posts', id);
+    const previousReaction = userReaction;
+
+    const newReactionsCount = { ...reactionsCount };
+    if (previousReaction) {
+      newReactionsCount[previousReaction] = (newReactionsCount[previousReaction] || 1) - 1;
+    }
+    newReactionsCount[reaction] = (newReactionsCount[reaction] || 0) + 1;
+
     try {
-      const postRef = doc(db, 'posts', id);
-      if (likedByUser) {
-        await updateDoc(postRef, { likes: arrayRemove(currentUser.uid) });
-        setLikedByUser(false);
-        setLikesCount((prevCount) => prevCount - 1);
-      } else {
-        await updateDoc(postRef, { likes: arrayUnion(currentUser.uid) });
-        setLikedByUser(true);
-        setLikesCount((prevCount) => prevCount + 1);
-      }
+      await updateDoc(postRef, {
+        reactions: newReactionsCount,
+        [`userReactions.${currentUser.uid}`]: reaction,
+      });
+      setReactionsCount(newReactionsCount);
+      setUserReaction(reaction);
     } catch (error) {
-      console.error('Error updating likes:', error);
+      console.error('Error updating reactions:', error);
+    } finally {
+      setReactionAnchor(null);
     }
   };
 
@@ -76,37 +90,82 @@ function BlogPost() {
         backgroundColor: theme.palette.background.paper,
         color: theme.palette.text.primary,
         borderRadius: 2,
-        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
+        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
         my: 4,
       }}
     >
-      {/* Blog Post Header */}
-      <Box mb={4} sx={{ textAlign: 'center' }}>
-        <Typography variant="h3" gutterBottom sx={{ fontWeight: 700, color: theme.palette.primary.main }}>
+      {/* Blog Post Header with Gradient Background */}
+      <Box
+        mb={4}
+        sx={{
+          textAlign: 'center',
+          background: `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.secondary.main} 90%)`,
+          color: theme.palette.primary.contrastText,
+          borderRadius: 2,
+          padding: '16px 24px',
+        }}
+      >
+        <Typography variant="h3" gutterBottom sx={{ fontWeight: 700 }}>
           {post.title}
         </Typography>
-        <Typography variant="subtitle2" sx={{ color: theme.palette.text.secondary, mb: 2 }}>
+        <Typography variant="subtitle2" sx={{ opacity: 0.85 }}>
           Published on {post.createdAt?.toDate().toLocaleDateString() || 'Unknown Date'}
         </Typography>
       </Box>
 
-      {/* Like Button with Animation */}
+      {/* Reaction Button and Counts */}
       <Box display="flex" alignItems="center" justifyContent="center" mb={4}>
         <IconButton
-          onClick={handleLikeToggle}
+          onClick={handleReactionClick}
           color="primary"
           sx={{
-            transform: likedByUser ? 'scale(1.1)' : 'scale(1)',
-            transition: 'transform 0.2s ease, color 0.3s ease',
-            color: likedByUser ? theme.palette.primary.main : theme.palette.action.disabled,
+            color: userReaction ? theme.palette.primary.main : theme.palette.action.disabled,
+            backgroundColor: userReaction ? theme.palette.background.default : 'transparent',
+            boxShadow: userReaction ? '0 4px 12px rgba(0, 0, 0, 0.2)' : 'none',
+            transition: 'all 0.3s ease',
           }}
         >
-          <ThumbUpIcon fontSize="normal" />
+          <EmojiEmotionsIcon fontSize="large" />
         </IconButton>
-        <Typography variant="body1" sx={{ ml: 1, color: theme.palette.text.primary }}>
-          {likesCount} {likesCount === 1 ? 'Like' : 'Likes'}
-        </Typography>
+        <Box sx={{ ml: 2, display: 'flex', gap: 1 }}>
+          {Object.entries(reactionsCount).map(([emoji, count]) => (
+            <Chip
+              key={emoji}
+              label={`${emoji} ${count}`}
+              sx={{
+                fontSize: '1rem',
+                backgroundColor: theme.palette.background.default,
+                color: theme.palette.text.primary,
+                boxShadow: '0 4px 8px rgba(0, 0, 0, 0.12)',
+              }}
+            />
+          ))}
+        </Box>
       </Box>
+
+      {/* Reaction Menu */}
+      <Menu
+        anchorEl={reactionAnchor}
+        open={Boolean(reactionAnchor)}
+        onClose={() => setReactionAnchor(null)}
+        sx={{ '& .MuiMenu-paper': { borderRadius: 2 } }}
+      >
+        {reactionOptions.map((emoji) => (
+          <MenuItem
+            key={emoji}
+            onClick={() => handleReactionSelect(emoji)}
+            sx={{
+              fontSize: '1.5rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              '&:hover': { backgroundColor: theme.palette.action.hover },
+            }}
+          >
+            {emoji}
+          </MenuItem>
+        ))}
+      </Menu>
 
       {/* Author Information */}
       <Box mb={6}>
@@ -114,82 +173,37 @@ function BlogPost() {
       </Box>
 
       {/* Introduction Section */}
-      <Box mb={5}>
+      <Box mb={5} sx={{ borderLeft: `4px solid ${theme.palette.primary.main}`, paddingLeft: 2 }}>
         <Typography variant="body1" paragraph sx={{ fontStyle: 'italic', color: theme.palette.text.secondary }}>
           {post.description}
         </Typography>
       </Box>
 
-      {/* Current Position Section */}
-      <Box mb={5}>
-        <Typography variant="h5" sx={{ fontWeight: 600, color: theme.palette.primary.main }}>
-          My Role at {post.company}
-        </Typography>
-        <Typography variant="body1" paragraph>
-          Currently, I’m working as a <b>{post.position}</b> at <b>{post.company}</b>. This position has allowed me to
-          develop and apply a unique set of skills that I value highly.
-        </Typography>
-      </Box>
+      {/* Sections */}
+      {[{ label: "My Role at", content: post.position, company: post.company },
+        { label: "The Application Journey", content: post.applicationProcess, skills: post.skills },
+        { label: "Interview Insights and Challenges", content: post.interviewFormat, challenges: post.challenges },
+        { label: "Salary and Benefits Insights", content: post.salaryInsights },
+        { label: "Reflections and Aspirations", content: post.reflections, goals: post.futureGoals },
+        { label: "My Advice for Aspiring Professionals", content: post.advice }]
+        .map((section, index) => (
+          <Box key={index} mb={5} sx={{ backgroundColor: theme.palette.background.default, padding: 2, borderRadius: 2, boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
+            <Typography variant="h5" sx={{ fontWeight: 600, color: theme.palette.primary.main }}>
+              {section.label} {section.company || ""}
+            </Typography>
+            <Typography variant="body1" paragraph>
+              {section.content}
+            </Typography>
+            {section.skills && <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>Skills: {section.skills}</Typography>}
+            {section.challenges && <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>Challenges: {section.challenges}</Typography>}
+            {section.goals && <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>Goals: {section.goals}</Typography>}
+          </Box>
+        ))}
 
-      {/* Application Process Section */}
-      <Box mb={5}>
-        <Typography variant="h5" sx={{ fontWeight: 600, color: theme.palette.primary.main }}>
-          The Application Journey
-        </Typography>
-        <Typography variant="body1" paragraph>
-          I found the job posting while {post.applicationProcess}. It was a rewarding, yet challenging process that
-          tested my perseverance. I relied on skills like <b>{post.skills}</b>, which played a significant role in my
-          success.
-        </Typography>
-      </Box>
-
-      {/* Interview Process Section */}
-      <Box mb={5}>
-        <Typography variant="h5" sx={{ fontWeight: 600, color: theme.palette.primary.main }}>
-          Interview Insights and Challenges
-        </Typography>
-        <Typography variant="body1" paragraph>
-          The interview format was {post.interviewFormat}. Going through this process presented a few hurdles,
-          especially when {post.challenges}. However, each challenge provided a new perspective and learning
-          opportunity.
-        </Typography>
-      </Box>
-
-      {/* Salary Insights Section */}
-      {post.salaryInsights && (
-        <Box mb={5}>
-          <Typography variant="h5" sx={{ fontWeight: 600, color: theme.palette.primary.main }}>
-            Salary and Benefits Insights
-          </Typography>
-          <Typography variant="body1" paragraph>
-            {post.salaryInsights}
-          </Typography>
-        </Box>
-      )}
-
-      {/* Reflections and Future Goals Section */}
-      <Box mb={5}>
-        <Typography variant="h5" sx={{ fontWeight: 600, color: theme.palette.primary.main }}>
-          Reflections and Aspirations
-        </Typography>
-        <Typography variant="body1" paragraph>
-          Reflecting on this journey, I’ve learned that {post.reflections}. Moving forward, my goal is to {post.futureGoals}.
-          This role has been a stepping stone towards what I envision for my future career.
-        </Typography>
-      </Box>
-
-      {/* Advice Section */}
-      <Box mb={5}>
-        <Typography variant="h5" sx={{ fontWeight: 600, color: theme.palette.primary.main }}>
-          My Advice for Aspiring Professionals
-        </Typography>
-        <Typography variant="body1" paragraph>
-          {post.advice}
-        </Typography>
-      </Box>
-
-      {/* Divider and Comments Section */}
+      {/* Divider */}
       <Divider sx={{ my: 4, backgroundColor: theme.palette.divider }} />
+
+      {/* Comments Section */}
       <CommentsSection postId={id} />
     </Container>
   );

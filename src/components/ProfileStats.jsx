@@ -1,8 +1,7 @@
-// src/components/ProfileStats.js
 import React from 'react';
 import { Box, Typography } from '@mui/material';
 
-function ProfileStats({ postCount, readersCount, likesCount, commentsCount }) {
+function ProfileStats({ postCount, viewersCount, reactionsCount, commentsCount }) {
   return (
     <Box
       sx={{
@@ -26,19 +25,19 @@ function ProfileStats({ postCount, readersCount, likesCount, commentsCount }) {
 
       <Box sx={{ textAlign: 'center' }}>
         <Typography variant="h6" sx={{ fontWeight: 700, color: 'primary.main' }}>
-          {readersCount}
+          {viewersCount}
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          Readers
+          Viewers
         </Typography>
       </Box>
 
       <Box sx={{ textAlign: 'center' }}>
         <Typography variant="h6" sx={{ fontWeight: 700, color: 'primary.main' }}>
-          {likesCount}
+          {reactionsCount}
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          Likes
+          Reactions
         </Typography>
       </Box>
 

@@ -3,12 +3,13 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Container, Typography, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';
 import { db, auth } from '../firebase';
-import { doc, getDoc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, collection, query, where, getDocs, deleteDoc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { useAuth } from '../contexts/AuthContext';
 import UserInfo from '../components/UserInfo';
 import UserPosts from '../components/UserPosts';
 import ProfileStats from '../components/ProfileStats';
+import EditPostModal from '../components/EditPostModal.js';
 
 function Profile() {
   const { currentUser } = useAuth();
@@ -23,11 +24,8 @@ function Profile() {
     formerCompany: '',
     location: '',
   });
-  const [posts, setPosts] = useState([
-    { id: 1, title: 'Test Post 1', date: 'January 1, 2023' },
-    { id: 2, title: 'Test Post 2', date: 'February 10, 2023' },
-  ]);
-  const [stats, setStats] = useState({ postCount: 2, readersCount: 20, likesCount: 10, commentsCount: 5 });
+  const [posts, setPosts] = useState([]);
+  const [stats, setStats] = useState({ postCount: 0, viewersCount: 0, reactionsCount: 0, commentsCount: 0 });
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editFormData, setEditFormData] = useState({
     name: '',
@@ -38,6 +36,9 @@ function Profile() {
     formerCompany: '',
     location: '',
   });
+  const [editPostOpen, setEditPostOpen] = useState(false);
+  const [selectedPostId, setSelectedPostId] = useState(null);
+  const [selectedPostData, setSelectedPostData] = useState({ title: '', description: '', category: '' });
 
   useEffect(() => {
     if (!currentUser) {
@@ -50,6 +51,7 @@ function Profile() {
       if (!currentUser) return;
 
       try {
+        // Fetch user information
         const userRef = doc(db, 'users', currentUser.uid);
         const userSnap = await getDoc(userRef);
         if (userSnap.exists()) {
@@ -66,17 +68,37 @@ function Profile() {
           });
         }
 
+        // Fetch posts by the user
         const postsRef = collection(db, 'posts');
         const postsQuery = query(postsRef, where('userId', '==', currentUser.uid));
         const postsSnapshot = await getDocs(postsQuery);
         const userPosts = postsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
         setPosts(userPosts);
 
+        // Calculate stats
+        let viewersCount = 0;
+        let reactionsCount = 0;
+        let commentsCount = 0;
+
+        for (const post of userPosts) {
+          // Sum viewers
+          viewersCount += post.viewers?.length || 0;
+
+          // Sum reactions
+          reactionsCount += post.reactions ? Object.values(post.reactions).reduce((acc, count) => acc + count, 0) : 0;
+
+          // Fetch and count comments for each post
+          const commentsRef = collection(db, 'posts', post.id, 'comments');
+          const commentsSnapshot = await getDocs(commentsRef);
+          commentsCount += commentsSnapshot.size;
+        }
+
+        // Update stats with actual data
         setStats({
           postCount: userPosts.length,
-          readersCount: userPosts.length * 10,
-          likesCount: userPosts.length * 5,
-          commentsCount: userPosts.length * 2,
+          viewersCount,
+          reactionsCount,
+          commentsCount,
         });
       } catch (error) {
         console.error('Error fetching profile data:', error);
@@ -121,6 +143,48 @@ function Profile() {
     }
   };
 
+  const handleEditPost = async (postId) => {
+    const postRef = doc(db, 'posts', postId);
+    const postSnap = await getDoc(postRef);
+    if (postSnap.exists()) {
+      setSelectedPostData(postSnap.data());
+      setSelectedPostId(postId);
+      setEditPostOpen(true);
+    }
+  };
+
+  const handleCloseEditPost = () => {
+    setEditPostOpen(false);
+    setSelectedPostId(null);
+  };
+
+  const handleSavePostEdit = async (updatedPostData) => {
+    if (!selectedPostId) return;
+
+    try {
+      const postRef = doc(db, 'posts', selectedPostId);
+      await updateDoc(postRef, updatedPostData);
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post.id === selectedPostId ? { ...post, ...updatedPostData } : post
+        )
+      );
+      handleCloseEditPost();
+    } catch (error) {
+      console.error('Error updating post:', error);
+    }
+  };
+
+  const handleDeletePost = async (postId) => {
+    try {
+      await deleteDoc(doc(db, 'posts', postId));
+      setPosts((prevPosts) => prevPosts.filter((post) => post.id !== postId));
+      setStats((prevStats) => ({ ...prevStats, postCount: prevStats.postCount - 1 }));
+    } catch (error) {
+      console.error('Error deleting post:', error);
+    }
+  };
+
   return (
     <Container sx={{ mt: 4 }}>
       <Typography variant="h4" gutterBottom sx={{ fontWeight: 700, mb: 4 }}>
@@ -155,11 +219,11 @@ function Profile() {
       />
       <ProfileStats
         postCount={stats.postCount}
-        readersCount={stats.readersCount}
-        likesCount={stats.likesCount}
+        viewersCount={stats.viewersCount}
+        reactionsCount={stats.reactionsCount}
         commentsCount={stats.commentsCount}
       />
-      <UserPosts posts={posts} />
+      <UserPosts posts={posts} onEditPost={handleEditPost} onDeletePost={handleDeletePost} />
 
       {/* Edit Profile Modal */}
       <Dialog open={editModalOpen} onClose={() => setEditModalOpen(false)}>
@@ -231,6 +295,15 @@ function Profile() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Edit Post Modal */}
+      <EditPostModal
+        open={editPostOpen}
+        onClose={handleCloseEditPost}
+        postId={selectedPostId}
+        postDetails={selectedPostData}
+        onSave={handleSavePostEdit}
+      />
     </Container>
   );
 }
