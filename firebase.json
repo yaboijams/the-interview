@@ -11,6 +11,20 @@
     "predeploy": [
       "npm --prefix \"$RESOURCE_DIR\" run lint"
     ],
-    "rawBody": true  
+    "rawBody": true
+  },
+  "hosting": {
+    "public": "build",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
   }
 }

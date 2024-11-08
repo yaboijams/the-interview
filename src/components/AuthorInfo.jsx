@@ -21,7 +21,14 @@ function AuthorInfo({ userId }) {
           const userRef = doc(db, 'users', userId);
           const userSnap = await getDoc(userRef);
           if (userSnap.exists()) {
-            setAuthor(userSnap.data());
+            const userData = userSnap.data();
+            setAuthor({
+              name: userData.name || 'Anonymous',
+              profilePicture: userData.ProfilePic || '/default-avatar.jpg', // Use 'ProfilePic' field
+              currentCompany: userData.currentCompany || '',
+              currentPosition: userData.currentPosition || '',
+              bio: userData.bio || '',
+            });
           } else {
             console.error('No such document!');
           }
@@ -48,12 +55,12 @@ function AuthorInfo({ userId }) {
     >
       <Avatar
         alt={author.name}
-        src={author.profilePicture || '/default-avatar.jpg'}
+        src={author.profilePicture}
         sx={{ width: 64, height: 64, mr: 2 }}
       />
       <Box>
         <Typography variant="h6" sx={{ fontWeight: 600, color: theme.palette.text.primary }}>
-          {author.name || 'Anonymous'}
+          {author.name}
         </Typography>
         <Typography variant="body2" sx={{ color: theme.palette.text.secondary, mt: 0.5 }}>
           {author.currentPosition && author.currentCompany

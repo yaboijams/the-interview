@@ -5,28 +5,46 @@ import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import CommentIcon from '@mui/icons-material/Comment';
 import { Link } from 'react-router-dom';
-import { collection, getDocs } from 'firebase/firestore';
-import { db } from '../firebase'; // Assuming this is your Firestore instance
+import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 
 function PostCard({ post }) {
   const theme = useTheme();
-  const { author } = post;
   const [commentsCount, setCommentsCount] = useState(0);
+  const [profilePic, setProfilePic] = useState('/default-avatar.jpg'); // Default avatar image
+  const [authorName, setAuthorName] = useState('Unknown Author');
+  const [currentPosition, setCurrentPosition] = useState('');
+  const [currentCompany, setCurrentCompany] = useState('');
 
-  // Calculate the total number of reactions
-  const getTotalReactions = (reactions) => {
-    return reactions ? Object.values(reactions).reduce((acc, count) => acc + count, 0) : 0;
-  };
+  // Fetch profile picture, name, position, and company for the author using userId
+  useEffect(() => {
+    const fetchAuthorInfo = async () => {
+      if (post.userId) {
+        try {
+          const userRef = doc(db, 'users', post.userId);
+          const userSnap = await getDoc(userRef);
+          if (userSnap.exists()) {
+            const userData = userSnap.data();
+            setProfilePic(userData.ProfilePic || '/default-avatar.jpg'); // Use ProfilePic field if available
+            setAuthorName(userData.name || 'Unknown Author'); // Use name field if available
+            setCurrentPosition(userData.currentPosition || ''); // Use currentPosition if available
+            setCurrentCompany(userData.currentCompany || ''); // Use currentCompany if available
+          }
+        } catch (error) {
+          console.error('Error fetching author information:', error);
+        }
+      }
+    };
 
-  // Get the total number of viewers from the viewers array
-  const getTotalViewers = (viewers) => (viewers ? viewers.length : 0);
+    fetchAuthorInfo();
+  }, [post.userId]);
 
   // Fetch the count of comments from the comments subcollection
   useEffect(() => {
     const fetchCommentsCount = async () => {
       try {
         const commentsSnapshot = await getDocs(collection(db, 'posts', post.id, 'comments'));
-        setCommentsCount(commentsSnapshot.size); // Set the total number of comments
+        setCommentsCount(commentsSnapshot.size);
       } catch (error) {
         console.error("Error fetching comments count:", error);
       }
@@ -34,6 +52,12 @@ function PostCard({ post }) {
     
     fetchCommentsCount();
   }, [post.id]);
+
+  const getTotalReactions = (reactions) => {
+    return reactions ? Object.values(reactions).reduce((acc, count) => acc + count, 0) : 0;
+  };
+
+  const getTotalViewers = (viewers) => (viewers ? viewers.length : 0);
 
   return (
     <Card
@@ -77,14 +101,14 @@ function PostCard({ post }) {
             boxShadow: theme.palette.mode === 'dark' ? '0 2px 6px rgba(255, 255, 255, 0.1)' : '0 2px 8px rgba(0, 0, 0, 0.08)',
           }}
         >
-          <Avatar src={author.profilePicture} alt={author.name} sx={{ width: 48, height: 48, mr: 2, border: '2px solid', borderColor: theme.palette.primary.main }} />
+          <Avatar src={profilePic} alt={authorName} sx={{ width: 48, height: 48, mr: 2, border: '2px solid', borderColor: theme.palette.primary.main }} />
           <Box>
             <Typography variant="subtitle1" sx={{ fontWeight: 600, color: theme.palette.text.primary }}>
-              {author.name || 'Unknown Author'}
+              {authorName}
             </Typography>
-            {author.currentPosition && author.currentCompany && (
+            {currentPosition && currentCompany && (
               <Typography variant="body2" sx={{ color: theme.palette.text.secondary, fontStyle: 'italic' }}>
-                {author.currentPosition} at {author.currentCompany}
+                {currentPosition} at {currentCompany}
               </Typography>
             )}
           </Box>
