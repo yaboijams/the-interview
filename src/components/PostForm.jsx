@@ -6,7 +6,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 import SubmitButton from './SubmitButton';
 
-const categories = ['General', 'Tech', 'Finance', 'Healthcare', 'Business', 'Education', 'Creative', 'Freelance', 'Other'];
+const categories = ['General', 'Tech', 'Finance', 'Healthcare', 'Business', 'Government', 'Education', 'Creative', 'Freelance', 'Other'];
 
 function PostForm({ onSubmit }) {
   const { currentUser } = useAuth();
@@ -120,7 +120,7 @@ function PostForm({ onSubmit }) {
 
       {/* Company and Position */}
       <Divider sx={{ my: 3 }} />
-      <Typography variant="h6" sx={{ fontWeight: 600 }}>Current Position</Typography>
+      <Typography variant="h6" sx={{ fontWeight: 600 }}>Job Position</Typography>
       <TextField
         label="Company or Organization"
         variant="outlined"

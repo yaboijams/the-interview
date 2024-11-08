@@ -1,7 +1,7 @@
-import React, { useRef, useState } from 'react';
-import { Box, Avatar, Typography, Button, CircularProgress } from '@mui/material';
+import React, { useRef, useState, useEffect } from 'react';
+import { Box, Avatar, Typography, Button, CircularProgress, Snackbar, Alert } from '@mui/material';
 import { db } from '../firebase';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 
 function UserInfo({
@@ -18,7 +18,28 @@ function UserInfo({
   const { currentUser } = useAuth();
   const [uploading, setUploading] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState(profilePicture);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState('');
   const fileInputRef = useRef(null);
+
+  // Load the profile picture URL from Firestore on component mount
+  useEffect(() => {
+    const loadProfilePicture = async () => {
+      if (currentUser) {
+        const userRef = doc(db, 'users', currentUser.uid);
+        const userDoc = await getDoc(userRef);
+
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          if (userData.ProfilePic) {
+            setAvatarUrl(userData.ProfilePic); // Set the URL from Firestore
+          }
+        }
+      }
+    };
+
+    loadProfilePicture();
+  }, [currentUser]);
 
   const handleAvatarClick = () => {
     fileInputRef.current.click();
@@ -28,13 +49,17 @@ function UserInfo({
     const file = e.target.files[0];
     if (file) {
       setUploading(true);
+      setError('');
       try {
+        const token = await currentUser.getIdToken();
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('userId', currentUser.uid);
 
         const response = await fetch(process.env.REACT_APP_UPLOAD_IMAGE_FUNCTION_URL, {
           method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
           body: formData,
         });
 
@@ -43,14 +68,17 @@ function UserInfo({
         }
 
         const data = await response.json();
-        const downloadURL = data.downloadURL;
+        const downloadURL = data.downloadUrl;
+        console.log("Image uploaded successfully, URL:", downloadURL);
         setAvatarUrl(downloadURL);
+        setSuccess(true);
 
         if (currentUser) {
           const userRef = doc(db, 'users', currentUser.uid);
-          await updateDoc(userRef, { profilePicture: downloadURL });
+          await updateDoc(userRef, { ProfilePic: downloadURL });
         }
       } catch (error) {
+        setError('Error uploading file');
         console.error('Error uploading file:', error);
       } finally {
         setUploading(false);
@@ -74,7 +102,7 @@ function UserInfo({
       <Box sx={{ position: 'relative' }}>
         <Avatar
           alt={name}
-          src={avatarUrl}
+          src={avatarUrl || profilePicture}
           sx={{
             width: 90,
             height: 90,
@@ -113,7 +141,6 @@ function UserInfo({
           {bio}
         </Typography>
 
-        {/* Current Position */}
         <Box sx={{ mt: 2 }}>
           <Typography variant="body1" color="primary.main" sx={{ fontWeight: 600 }}>
             Current Position:
@@ -123,7 +150,6 @@ function UserInfo({
           </Typography>
         </Box>
 
-        {/* Former Position */}
         <Box sx={{ mt: 2 }}>
           <Typography variant="body1" color="primary.main" sx={{ fontWeight: 600 }}>
             Former Position:
@@ -133,7 +159,6 @@ function UserInfo({
           </Typography>
         </Box>
 
-        {/* Location */}
         <Box sx={{ mt: 2 }}>
           <Typography variant="body1" color="primary.main" sx={{ fontWeight: 600 }}>
             Location:
@@ -161,6 +186,18 @@ function UserInfo({
           Edit Profile
         </Button>
       )}
+
+      {/* Snackbar for Success and Error Notifications */}
+      <Snackbar open={success} autoHideDuration={3000} onClose={() => setSuccess(false)}>
+        <Alert onClose={() => setSuccess(false)} severity="success" sx={{ width: '100%' }}>
+          Profile picture updated successfully!
+        </Alert>
+      </Snackbar>
+      <Snackbar open={!!error} autoHideDuration={3000} onClose={() => setError('')}>
+        <Alert onClose={() => setError('')} severity="error" sx={{ width: '100%' }}>
+          {error}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

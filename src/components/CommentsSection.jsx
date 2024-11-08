@@ -12,33 +12,45 @@ function CommentsSection({ postId, postAuthorId }) {
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(false);
   const [displayName, setDisplayName] = useState('Anonymous');
+  const [profilePicUrls, setProfilePicUrls] = useState({}); // Map user IDs to profile picture URLs
   const [emojiAnchor, setEmojiAnchor] = useState(null);
   const theme = useTheme();
   const { currentUser } = useAuth();
   const [userReactions, setUserReactions] = useState({});
 
   useEffect(() => {
-    const fetchDisplayName = async () => {
+    const fetchUserProfile = async () => {
       if (currentUser) {
         const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
         if (userDoc.exists()) {
-          setDisplayName(userDoc.data().name || 'Anonymous');
+          const data = userDoc.data();
+          setDisplayName(data.name || 'Anonymous');
         }
       }
     };
-    fetchDisplayName();
+    fetchUserProfile();
   }, [currentUser]);
 
   useEffect(() => {
     const commentsRef = collection(db, 'posts', postId, 'comments');
-    const unsubscribe = onSnapshot(commentsRef, (snapshot) => {
+    const unsubscribe = onSnapshot(commentsRef, async (snapshot) => {
       const commentsData = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
       setComments(commentsData);
 
-      // Track the user's reactions
+      // Fetch profile pictures for each unique author
+      const uniqueAuthors = [...new Set(commentsData.map((comment) => comment.authorId))];
+      const profilePicUrlsMap = {};
+      for (const authorId of uniqueAuthors) {
+        const userDoc = await getDoc(doc(db, 'users', authorId));
+        if (userDoc.exists() && userDoc.data().ProfilePic) {
+          profilePicUrlsMap[authorId] = userDoc.data().ProfilePic;
+        }
+      }
+      setProfilePicUrls(profilePicUrlsMap);
+
       const reactions = snapshot.docs.reduce((acc, doc) => {
         const data = doc.data();
         if (data.userReactions && data.userReactions[currentUser.uid]) {
@@ -58,8 +70,8 @@ function CommentsSection({ postId, postAuthorId }) {
       authorId: currentUser.uid,
       text: newComment,
       createdAt: Timestamp.now(),
-      emojiReactions: {}, // Count for each reaction type
-      userReactions: {},  // Tracks the user's current reaction
+      emojiReactions: {},
+      userReactions: {},
     };
 
     try {
@@ -93,12 +105,19 @@ function CommentsSection({ postId, postAuthorId }) {
     const previousReaction = userReactions[commentId];
 
     try {
-      // Update emoji counts based on user selection
+      const currentComment = comments.find((c) => c.id === commentId);
+      const currentEmojiReactions = { ...currentComment.emojiReactions };
+
+      if (previousReaction) {
+        currentEmojiReactions[previousReaction] = (currentEmojiReactions[previousReaction] || 1) - 1;
+      }
+      currentEmojiReactions[emoji] = (currentEmojiReactions[emoji] || 0) + 1;
+
       await updateDoc(commentRef, {
-        [`emojiReactions.${emoji}`]: (comments.find((c) => c.id === commentId).emojiReactions[emoji] || 0) + 1,
-        ...(previousReaction ? { [`emojiReactions.${previousReaction}`]: (comments.find((c) => c.id === commentId).emojiReactions[previousReaction] || 0) - 1 } : {}),
+        emojiReactions: currentEmojiReactions,
         [`userReactions.${currentUser.uid}`]: emoji,
       });
+
       setUserReactions((prevReactions) => ({
         ...prevReactions,
         [commentId]: emoji,
@@ -135,8 +154,8 @@ function CommentsSection({ postId, postAuthorId }) {
                 gap: 2,
               }}
             >
-              <Avatar sx={{ bgcolor: theme.palette.primary.main }}>
-                {comment.author.charAt(0).toUpperCase()}
+              <Avatar src={profilePicUrls[comment.authorId] || ''} sx={{ bgcolor: theme.palette.primary.main }}>
+                {!profilePicUrls[comment.authorId] && comment.author.charAt(0).toUpperCase()}
               </Avatar>
               <Box flexGrow={1}>
                 <Typography variant="subtitle1" sx={{ fontWeight: 600, color: theme.palette.primary.main }}>
@@ -210,7 +229,6 @@ function CommentsSection({ postId, postAuthorId }) {
         {loading ? 'Submitting...' : 'Submit'}
       </Button>
 
-      {/* Emoji Menu */}
       <Menu
         anchorEl={emojiAnchor ? emojiAnchor.anchor : null}
         open={Boolean(emojiAnchor)}

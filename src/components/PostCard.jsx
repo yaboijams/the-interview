@@ -1,17 +1,39 @@
 // src/components/PostCard.js
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, Typography, CardActions, Button, Box, IconButton, Divider, Avatar, CardMedia, Paper, useTheme } from '@mui/material';
 import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import CommentIcon from '@mui/icons-material/Comment';
 import { Link } from 'react-router-dom';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../firebase'; // Assuming this is your Firestore instance
 
 function PostCard({ post }) {
   const theme = useTheme();
   const { author } = post;
+  const [commentsCount, setCommentsCount] = useState(0);
 
   // Calculate the total number of reactions
   const getTotalReactions = (reactions) => {
     return reactions ? Object.values(reactions).reduce((acc, count) => acc + count, 0) : 0;
   };
+
+  // Get the total number of viewers from the viewers array
+  const getTotalViewers = (viewers) => (viewers ? viewers.length : 0);
+
+  // Fetch the count of comments from the comments subcollection
+  useEffect(() => {
+    const fetchCommentsCount = async () => {
+      try {
+        const commentsSnapshot = await getDocs(collection(db, 'posts', post.id, 'comments'));
+        setCommentsCount(commentsSnapshot.size); // Set the total number of comments
+      } catch (error) {
+        console.error("Error fetching comments count:", error);
+      }
+    };
+    
+    fetchCommentsCount();
+  }, [post.id]);
 
   return (
     <Card
@@ -114,13 +136,31 @@ function PostCard({ post }) {
         >
           Read More
         </Button>
-        <Box display="flex" alignItems="center">
-          <IconButton color="primary" disabled>
-            <EmojiEmotionsIcon />
-          </IconButton>
-          <Typography variant="body2" sx={{ ml: 0.5 }}>
-            {getTotalReactions(post.reactions)}
-          </Typography>
+        <Box display="flex" alignItems="center" gap={1}>
+          <Box display="flex" alignItems="center">
+            <IconButton color="primary" disabled>
+              <EmojiEmotionsIcon />
+            </IconButton>
+            <Typography variant="body2" sx={{ ml: 0.5 }}>
+              {getTotalReactions(post.reactions)}
+            </Typography>
+          </Box>
+          <Box display="flex" alignItems="center">
+            <IconButton color="primary" disabled>
+              <CommentIcon />
+            </IconButton>
+            <Typography variant="body2" sx={{ ml: 0.5 }}>
+              {commentsCount}
+            </Typography>
+          </Box>
+          <Box display="flex" alignItems="center">
+            <IconButton color="primary" disabled>
+              <VisibilityIcon />
+            </IconButton>
+            <Typography variant="body2" sx={{ ml: 0.5 }}>
+              {getTotalViewers(post.viewers)}
+            </Typography>
+          </Box>
         </Box>
       </CardActions>
     </Card>

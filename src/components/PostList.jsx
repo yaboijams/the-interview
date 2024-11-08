@@ -5,7 +5,7 @@ import { Grid, CircularProgress, Box, Select, MenuItem, Typography, FormControl,
 import { db } from '../firebase';
 import { collection, query, orderBy, getDocs, doc, getDoc } from 'firebase/firestore';
 
-const categories = ['General', 'Tech', 'Finance', 'Healthcare', 'Business', 'Education', 'Creative', 'Freelance', 'Other'];
+const categories = ['General', 'Tech', 'Finance', 'Healthcare', 'Business', 'Government', 'Education', 'Creative', 'Freelance', 'Other'];
 
 function PostList() {
   const [posts, setPosts] = useState([]);
