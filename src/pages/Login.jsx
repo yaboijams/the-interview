@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth, db } from '../firebase';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 import AuthForm from '../components/AuthForm';
 import AuthContainer from '../components/AuthContainer';
 
@@ -43,7 +43,30 @@ function Login() {
   const handleGoogleSignIn = async () => {
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      // Extract user details
+      const displayName = user.displayName || '';
+      const [firstName, ...lastNameParts] = displayName.split(' ');
+      const lastName = lastNameParts.join(' ');
+      const profilePic = user.photoURL || '/default-avatar.jpg';
+
+      // Check if user already exists in Firestore
+      const userRef = doc(db, 'users', user.uid);
+      const userDoc = await getDoc(userRef);
+
+      if (!userDoc.exists()) {
+        // Save new Google user details to Firestore
+        await setDoc(userRef, {
+          firstName: firstName || 'GoogleUser',
+          lastName: lastName || '',
+          email: user.email,
+          ProfilePic: profilePic, // Save profile picture URL
+          createdAt: new Date(),
+        });
+      }
+
       navigate('/profile');
     } catch (error) {
       handleAuthError(error);
@@ -80,7 +103,7 @@ function Login() {
         onToggleMode={handleToggleMode}
         onSubmit={handleAuthSubmit}
         onGoogleSignIn={handleGoogleSignIn}
-        error={error} // Pass error as a prop
+        error={error}
       />
       <div id="recaptcha-container"></div>
     </AuthContainer>

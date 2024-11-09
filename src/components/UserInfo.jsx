@@ -69,7 +69,6 @@ function UserInfo({
 
         const data = await response.json();
         const downloadURL = data.downloadUrl;
-        console.log("Image uploaded successfully, URL:", downloadURL);
         setAvatarUrl(downloadURL);
         setSuccess(true);
 
@@ -90,13 +89,15 @@ function UserInfo({
     <Box
       sx={{
         display: 'flex',
-        alignItems: 'center',
+        flexDirection: { xs: 'column', md: 'row' },
+        alignItems: { xs: 'flex-start', md: 'center' },
         padding: '24px',
         backgroundColor: 'background.paper',
         borderRadius: 3,
         boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.15)',
         mb: 4,
         gap: 3,
+        width: '100%',
       }}
     >
       <Box sx={{ position: 'relative' }}>
@@ -133,7 +134,8 @@ function UserInfo({
           onChange={handleFileChange}
         />
       </Box>
-      <Box sx={{ flexGrow: 1 }}>
+
+      <Box sx={{ flexGrow: 1, width: '100%' }}>
         <Typography variant="h5" sx={{ fontWeight: 700 }}>
           {name}
         </Typography>
@@ -168,6 +170,7 @@ function UserInfo({
           </Typography>
         </Box>
       </Box>
+
       {onEdit && (
         <Button
           onClick={onEdit}
@@ -181,6 +184,9 @@ function UserInfo({
               backgroundColor: 'primary.light',
               borderColor: 'primary.dark',
             },
+            width: { xs: '100%', md: 'auto' }, // Full width on small screens, auto on larger screens
+            mt: { xs: 2, md: 0 }, // Margin top for mobile view
+            alignSelf: { xs: 'center', md: 'flex-start' }, // Centered in mobile view, aligns normally on desktop
           }}
         >
           Edit Profile

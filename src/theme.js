@@ -5,32 +5,32 @@ export const lightTheme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#002875',  // Deep Blue for primary elements
-      light: '#5b9bd5', // Lighter blue for hover effects
-      dark: '#001a4d',  // Very dark blue for active states
+      main: '#b83a14',   // Rich, earthy red-orange for primary actions
+      light: '#f3742b',  // Subtle muted orange for hover effects
+      dark: '#612e37',   // Deep, refined red for active states
     },
     secondary: {
-      main: '#313335',  // Dark Gray for secondary accents
-      light: '#86888a', // Medium Gray for secondary elements
-      dark: '#1b1d1e',  // Almost black for high-emphasis elements
+      main: '#fed172',   // Soft, premium gold for secondary highlights
+      light: '#f9e1a1',  // Lighter gold for hover effects on secondary actions
+      dark: '#b89d57',   // Muted gold for subtle emphasis
     },
     background: {
-      default: '#dcddde', // Light neutral background for overall app
-      paper: '#ffffff',   // White for cards and papers
-      light: '#e8ebed',   // Slightly darker for section backgrounds
-      dark: '#caccce',    // Light Gray for additional contrast
+      default: '#f5f5f5', // Very light, almost white, neutral background
+      paper: '#ffffff',   // Pure white for card and container backgrounds
+      light: '#e8ebed',   // Light neutral gray for additional sections
+      dark: '#d1d1d1',    // Light gray for subtle section contrasts
     },
     text: {
-      primary: '#000000',   // Black for primary text
-      secondary: '#313335', // Dark Gray for secondary text
-      muted: '#86888a',     // Medium Gray for subtle text
+      primary: '#231650', // Deep, luxurious purple for primary text
+      secondary: '#313335', // Dark gray for secondary text
+      muted: '#86888a',     // Soft gray for muted text elements
     },
     action: {
-      hover: '#e1f0fa',      // Soft blue hover background
-      selected: '#caccce',   // Light Gray selected background for items
-      highlight: '#ffb74d',  // Amber for notifications or important actions
+      hover: '#f3c88a',     // Muted peach for hover effects on action items
+      selected: '#e8ebed',  // Light gray for selected items
+      highlight: '#b83a14', // Rich red-orange for critical actions
     },
-    divider: '#e0e0e0',     // Light Gray for dividers and borders
+    divider: '#dadada',     // Subtle gray for dividers and borders
   },
 });
 
@@ -38,31 +38,31 @@ export const darkTheme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: '#64b5f6',  // Softer blue for primary elements in dark mode
-      light: '#90caf9', // Bright blue for hover effects
-      dark: '#002875',  // Deep Blue as a bold accent
+      main: '#f3742b',    // Warm, refined orange for primary actions
+      light: '#fed172',   // Premium gold for hover highlights
+      dark: '#b83a14',    // Rich red-orange for active or pressed states
     },
     secondary: {
-      main: '#9e9e9e',  // Light Gray for secondary accents
-      light: '#bdbdbd', // Medium Gray for subtle contrast
-      dark: '#616161',  // Dark Gray for emphasis
+      main: '#86888a',    // Neutral medium gray for secondary elements
+      light: '#bdbdbd',   // Soft, light gray for softer secondary accents
+      dark: '#4a4a4a',    // Darker gray for high-emphasis elements
     },
     background: {
-      default: '#121212', // Very dark background for main content
-      paper: '#1e1e1e',   // Slightly lighter background for cards and papers
-      light: '#333333',   // Mid-tone gray for sections needing contrast
-      dark: '#000000',    // Black for headers or footers
+      default: '#181818', // Almost black background for a sleek, high-end feel
+      paper: '#232323',   // Dark gray for card and container backgrounds
+      light: '#333333',   // Medium dark gray for subtle contrast
+      dark: '#0d0d0d',    // Black for headers and footers
     },
     text: {
-      primary: '#ffffff',  // White for readability
-      secondary: '#cfcfcf', // Light Gray for secondary text
-      muted: '#9e9e9e',     // Medium Gray for muted text
+      primary: '#f5f5f5', // Off-white for readability without harsh contrast
+      secondary: '#c7c7c7', // Soft gray for secondary text
+      muted: '#86888a',     // Medium gray for muted text
     },
     action: {
-      hover: '#1e88e5',  // Brighter blue for hover effects
-      selected: '#616161', // Dark Gray for selected items
-      highlight: '#ff7043',  // Coral for notifications or calls-to-action
+      hover: '#b83a14',    // Rich red-orange for hover on interactive items
+      selected: '#333333', // Dark gray for selected backgrounds
+      highlight: '#fed172', // Subtle gold for attention-grabbing actions
     },
-    divider: '#333333', // Subtle divider for separation without high contrast
+    divider: '#2a2a2a',    // Dark gray divider for minimal contrast separation
   },
 });

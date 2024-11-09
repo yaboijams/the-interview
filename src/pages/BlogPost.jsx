@@ -105,65 +105,76 @@ function BlogPost() {
     >
       {/* Blog Post Header with Gradient Background */}
       <Box
-  mb={4}
-  sx={{
-    textAlign: 'center',
-    background: `linear-gradient(135deg, ${theme.palette.primary.main} 30%, ${theme.palette.secondary.main} 90%)`,
-    color: theme.palette.grey[100], // Lighter text color for better contrast
-    borderRadius: 2,
-    padding: '24px',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
-    position: 'relative',
-  }}
->
-  <Typography variant="h3" gutterBottom sx={{ fontWeight: 700, textTransform: 'capitalize' }}>
-    {post.title}
-  </Typography>
-  <Typography variant="subtitle2" sx={{ opacity: 0.85, color: theme.palette.grey[200] }}>
-    Published on {post.createdAt?.toDate().toLocaleDateString() || 'Unknown Date'}
-  </Typography>
+        mb={4}
+        sx={{
+          textAlign: 'center',
+          background: `linear-gradient(135deg, ${theme.palette.primary.main} 30%, ${theme.palette.secondary.main} 90%)`,
+          color: theme.palette.grey[100],
+          borderRadius: 2,
+          padding: '24px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+          position: 'relative',
+          overflow: 'hidden',
+          width: '100%',
+          '@media (max-width:600px)': {
+            padding: '16px',
+          }
+        }}
+      >
+        <Typography
+          variant="h4"
+          gutterBottom
+          sx={{
+            fontWeight: 700,
+            textTransform: 'capitalize',
+            wordWrap: 'break-word',
+            fontSize: { xs: '1.8rem', sm: '2.4rem', md: '3rem' },
+          }}
+        >
+          {post.title}
+        </Typography>
+        <Typography variant="subtitle2" sx={{ opacity: 0.85, color: theme.palette.grey[200] }}>
+          Published on {post.createdAt?.toDate().toLocaleDateString() || 'Unknown Date'}
+        </Typography>
 
-{/* Description under title */}
-<Box mt={2} sx={{ padding: '0 10%', color: theme.palette.grey[300] }}>
-  <Typography variant="h6" sx={{ fontStyle: 'italic', fontWeight: 500 }}>
-    {post.description}
-  </Typography>
-</Box>
+        {/* Description under title */}
+        <Box mt={2} sx={{ padding: '0 10%', color: theme.palette.grey[300] }}>
+          <Typography variant="h6" sx={{ fontStyle: 'italic', fontWeight: 500 }}>
+            {post.description}
+          </Typography>
+        </Box>
 
-
- {/* Viewers Icon */}
-<Tooltip title={`${viewersCount} Views`} placement="top">
-  <IconButton
-    sx={{
-      position: 'absolute',
-      top: 8,
-      right: 8,
-      color: theme.palette.mode === 'dark' ? theme.palette.grey[300] : theme.palette.text.primary, // Adapt color for theme
-      backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[200], // Adapt background for theme
-      '&:hover': {
-        backgroundColor: theme.palette.mode === 'dark' ? theme.palette.primary.dark : theme.palette.primary.light,
-      },
-      borderRadius: '50%', // Circular shape
-      padding: '8px',
-      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)', // Subtle shadow for depth
-    }}
-  >
-    <VisibilityIcon />
-    <Typography
-      variant="body2"
-      sx={{
-        ml: 0.5,
-        fontWeight: 500,
-        color: theme.palette.mode === 'dark' ? theme.palette.grey[300] : theme.palette.text.primary, // Adapt text color for theme
-      }}
-    >
-      {viewersCount}
-    </Typography>
-  </IconButton>
-</Tooltip>
-
-</Box>
-
+        {/* Viewers Icon */}
+        <Tooltip title={`${viewersCount} Views`} placement="top">
+          <IconButton
+            sx={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              color: theme.palette.mode === 'dark' ? theme.palette.grey[300] : theme.palette.text.primary,
+              backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[200],
+              '&:hover': {
+                backgroundColor: theme.palette.mode === 'dark' ? theme.palette.primary.dark : theme.palette.primary.light,
+              },
+              borderRadius: '50%',
+              padding: '8px',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+            }}
+          >
+            <VisibilityIcon />
+            <Typography
+              variant="body2"
+              sx={{
+                ml: 0.5,
+                fontWeight: 500,
+                color: theme.palette.mode === 'dark' ? theme.palette.grey[300] : theme.palette.text.primary,
+              }}
+            >
+              {viewersCount}
+            </Typography>
+          </IconButton>
+        </Tooltip>
+      </Box>
 
       {/* Reaction Button and Counts */}
       <Box display="flex" alignItems="center" justifyContent="center" mb={4} flexWrap="wrap" sx={{ gap: 1 }}>
@@ -247,31 +258,36 @@ function BlogPost() {
           <Typography variant="h5" sx={{ fontWeight: 600, color: theme.palette.primary.main }}>
             {section.label} {section.company || ""}
           </Typography>
-          <Typography variant="body1" paragraph>
-            {section.content}
-          </Typography>
+          <Typography
+            variant="body1"
+            paragraph
+            dangerouslySetInnerHTML={{ __html: section.content }}
+          />
           {section.skills && (
-            <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
-              <strong>Skills:</strong> {section.skills}
-            </Typography>
+            <Typography
+              variant="body2"
+              sx={{ color: theme.palette.text.secondary }}
+              dangerouslySetInnerHTML={{ __html: `<strong>Skills:</strong> ${section.skills}` }}
+            />
           )}
           {section.challenges && (
-            <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
-              <strong>Challenges:</strong> {section.challenges}
-            </Typography>
+            <Typography
+              variant="body2"
+              sx={{ color: theme.palette.text.secondary }}
+              dangerouslySetInnerHTML={{ __html: `<strong>Challenges:</strong> ${section.challenges}` }}
+            />
           )}
           {section.goals && (
-            <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
-              <strong>Goals:</strong> {section.goals}
-            </Typography>
+            <Typography
+              variant="body2"
+              sx={{ color: theme.palette.text.secondary }}
+              dangerouslySetInnerHTML={{ __html: `<strong>Goals:</strong> ${section.goals}` }}
+            />
           )}
         </Box>
       ))}
 
-      {/* Divider */}
       <Divider sx={{ my: 4, backgroundColor: theme.palette.divider }} />
-
-      {/* Comments Section */}
       <CommentsSection postId={id} />
     </Container>
   );

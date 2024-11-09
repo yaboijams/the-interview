@@ -5,6 +5,8 @@ import { db } from '../firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 import SubmitButton from './SubmitButton';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 const categories = ['General', 'Tech', 'Finance', 'Healthcare', 'Business', 'Government', 'Education', 'Creative', 'Freelance', 'Other'];
 
@@ -70,6 +72,14 @@ function PostForm({ onSubmit }) {
     setReflections('');
     setFutureGoals('');
     setAdvice('');
+  };
+
+  const quillModules = {
+    toolbar: [
+      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+      ['bold', 'italic', 'underline'],
+      ['link']
+    ],
   };
 
   return (
@@ -142,22 +152,19 @@ function PostForm({ onSubmit }) {
         sx={{ backgroundColor: 'background.default' }}
       />
 
-      {/* Application Process */}
+      {/* Application Process with Rich Text Editor */}
       <Divider sx={{ my: 3 }} />
       <Typography variant="h6" sx={{ fontWeight: 600 }}>Application Process</Typography>
-      <Tooltip title="Describe how you found and applied for this job" arrow>
-        <TextField
-          label="How did you apply for this job?"
-          variant="outlined"
-          fullWidth
-          multiline
-          rows={4}
-          value={applicationProcess}
-          onChange={(e) => setApplicationProcess(e.target.value)}
-          placeholder="E.g., 'I found the job through a [source] and decided to apply because...'"
-          sx={{ backgroundColor: 'background.default' }}
-        />
-      </Tooltip>
+      <ReactQuill
+        value={applicationProcess}
+        onChange={setApplicationProcess}
+        placeholder="Describe how you found and applied for this job..."
+        theme="snow"
+        modules={quillModules}
+        style={{ backgroundColor: 'background.default' }}
+      />
+
+      {/* Skills */}
       <Tooltip title="List key skills or qualifications that helped you secure the job" arrow>
         <TextField
           label="Skills and Qualifications"
@@ -172,99 +179,71 @@ function PostForm({ onSubmit }) {
         />
       </Tooltip>
 
-      {/* Interview Details */}
+      {/* Interview Process */}
       <Divider sx={{ my: 3 }} />
       <Typography variant="h6" sx={{ fontWeight: 600 }}>Interview Process</Typography>
-      <Tooltip title="Describe the format of the interview process" arrow>
-        <TextField
-          label="Interview Format"
-          variant="outlined"
-          fullWidth
-          multiline
-          rows={4}
-          value={interviewFormat}
-          onChange={(e) => setInterviewFormat(e.target.value)}
-          placeholder="E.g., 'The interview consisted of [steps] and included questions on...'"
-          sx={{ backgroundColor: 'background.default' }}
-        />
-      </Tooltip>
-      <Tooltip title="Describe any challenges or obstacles you faced" arrow>
-        <TextField
-          label="Challenges and Obstacles"
-          variant="outlined"
-          fullWidth
-          multiline
-          rows={4}
-          value={challenges}
-          onChange={(e) => setChallenges(e.target.value)}
-          placeholder="E.g., 'One of the challenges I faced was...'"
-          sx={{ backgroundColor: 'background.default' }}
-        />
-      </Tooltip>
+      <ReactQuill
+        value={interviewFormat}
+        onChange={setInterviewFormat}
+        placeholder="Describe the interview format..."
+        theme="snow"
+        modules={quillModules}
+        style={{ backgroundColor: 'background.default' }}
+      />
+
+      {/* Challenges */}
+      <ReactQuill
+        value={challenges}
+        onChange={setChallenges}
+        placeholder="Describe any challenges or obstacles you faced..."
+        theme="snow"
+        modules={quillModules}
+        style={{ backgroundColor: 'background.default' }}
+      />
 
       {/* Salary Insights (Optional) */}
       <Divider sx={{ my: 3 }} />
       <Typography variant="h6" sx={{ fontWeight: 600 }}>Salary/Benefits Insights (Optional)</Typography>
-      <Tooltip title="Share insights or advice on salary negotiation or benefits" arrow>
-        <TextField
-          label="Salary/Benefits Insights"
-          variant="outlined"
-          fullWidth
-          multiline
-          rows={3}
-          value={salaryInsights}
-          onChange={(e) => setSalaryInsights(e.target.value)}
-          placeholder="E.g., 'During the negotiation process, I found it helpful to...'"
-          sx={{ backgroundColor: 'background.default' }}
-        />
-      </Tooltip>
+      <ReactQuill
+        value={salaryInsights}
+        onChange={setSalaryInsights}
+        placeholder="Share insights on salary negotiation or benefits..."
+        theme="snow"
+        modules={quillModules}
+        style={{ backgroundColor: 'background.default' }}
+      />
 
       {/* Reflections and Future Goals */}
       <Divider sx={{ my: 3 }} />
       <Typography variant="h6" sx={{ fontWeight: 600 }}>Reflections and Future Goals</Typography>
-      <Tooltip title="Reflect on the experience and key lessons learned" arrow>
-        <TextField
-          label="Reflections and Key Learnings"
-          variant="outlined"
-          fullWidth
-          multiline
-          rows={4}
-          value={reflections}
-          onChange={(e) => setReflections(e.target.value)}
-          placeholder="E.g., 'Looking back, I learned that...'"
-          sx={{ backgroundColor: 'background.default' }}
-        />
-      </Tooltip>
-      <Tooltip title="Share your future goals or aspirations in this role" arrow>
-        <TextField
-          label="Future Goals"
-          variant="outlined"
-          fullWidth
-          multiline
-          rows={3}
-          value={futureGoals}
-          onChange={(e) => setFutureGoals(e.target.value)}
-          placeholder="E.g., 'In the future, I aim to...'"
-          sx={{ backgroundColor: 'background.default' }}
-        />
-      </Tooltip>
+      <ReactQuill
+        value={reflections}
+        onChange={setReflections}
+        placeholder="Reflect on the experience and lessons learned..."
+        theme="snow"
+        modules={quillModules}
+        style={{ backgroundColor: 'background.default' }}
+      />
+      <ReactQuill
+        value={futureGoals}
+        onChange={setFutureGoals}
+        placeholder="Share your future goals or aspirations..."
+        theme="snow"
+        modules={quillModules}
+        style={{ backgroundColor: 'background.default' }}
+      />
 
       {/* Advice */}
       <Divider sx={{ my: 3 }} />
-      <Tooltip title="Provide advice or tips for others based on your experience" arrow>
-        <TextField
-          label="Advice for Others"
-          variant="outlined"
-          fullWidth
-          multiline
-          rows={4}
-          required
-          value={advice}
-          onChange={(e) => setAdvice(e.target.value)}
-          placeholder="E.g., 'My advice for anyone looking to enter this field is...'"
-          sx={{ backgroundColor: 'background.default' }}
-        />
-      </Tooltip>
+      <Typography variant="h6" sx={{ fontWeight: 600 }}>Advice for Others</Typography>
+      <ReactQuill
+        value={advice}
+        onChange={setAdvice}
+        placeholder="Provide advice for others based on your experience..."
+        theme="snow"
+        modules={quillModules}
+        style={{ backgroundColor: 'background.default' }}
+      />
 
       <SubmitButton disabled={!title || !description || !category || !company || !position || !advice} />
     </Box>
