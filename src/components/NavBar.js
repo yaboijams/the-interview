@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { AppBar, Toolbar, Typography, Button, Switch, Drawer, IconButton, List, ListItem, ListItemText, Divider } from '@mui/material';
+import { AppBar, Toolbar, Typography, Button, Switch, Drawer, IconButton, List, ListItem, ListItemText, Divider, Box } from '@mui/material';
 import { Link } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
 import { useTheme, useMediaQuery } from '@mui/material';
+import logo from '../assets/TitleBlueIE.png'; // Adjust the path to your assets folder if necessary
 
 function Navbar({ toggleTheme, isDarkMode }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
-
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -27,9 +27,11 @@ function Navbar({ toggleTheme, isDarkMode }) {
         backgroundColor: theme.palette.background.default,
       }}
     >
-      <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, color: 'primary.main', textAlign: 'center' }}>
-        The Interview
-      </Typography>
+      <Box display="flex" justifyContent="center" mb={2}>
+        <Link to="/" onClick={handleLinkClick}>
+          <img src={logo} alt="The Interview Logo" style={{ width: '80px', height: 'auto' }} />
+        </Link>
+      </Box>
       <Divider sx={{ mb: 2 }} />
 
       {['Home', 'Create', 'Profile'].map((text, index) => (
@@ -68,11 +70,14 @@ function Navbar({ toggleTheme, isDarkMode }) {
   return (
     <AppBar position="static" color="primary" sx={{ boxShadow: 'none' }}>
       <Toolbar>
-        <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 700 }}>
-          <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
-            The Interview
+        <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
+          <Link to="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', color: 'inherit' }}>
+            <img src={logo} alt="The Interview Logo" style={{ width: '40px', height: 'auto', marginRight: '8px' }} />
+            {/* <Typography variant="h6" sx={{ fontWeight: 700 }}>
+              The Interview
+            </Typography> */}
           </Link>
-        </Typography>
+        </Box>
 
         {isMobile ? (
           <IconButton

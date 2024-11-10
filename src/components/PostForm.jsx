@@ -1,8 +1,7 @@
-// src/components/PostForm.js
 import React, { useState, useEffect } from 'react';
-import { TextField, Box, Typography, Divider, Tooltip, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
+import { TextField, Box, Typography, Divider, Tooltip, Select, MenuItem, FormControl, InputLabel, Autocomplete } from '@mui/material';
 import { db } from '../firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, getDocs, addDoc } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 import SubmitButton from './SubmitButton';
 import ReactQuill from 'react-quill';
@@ -18,13 +17,25 @@ function PostForm({ onSubmit }) {
   const [company, setCompany] = useState('');
   const [position, setPosition] = useState('');
   const [applicationProcess, setApplicationProcess] = useState('');
-  const [skills, setSkills] = useState('');
+  const [skills, setSkills] = useState([]);
+  const [allSkills, setAllSkills] = useState([]); // Store fetched skills here
   const [interviewFormat, setInterviewFormat] = useState('');
   const [challenges, setChallenges] = useState('');
   const [salaryInsights, setSalaryInsights] = useState('');
   const [reflections, setReflections] = useState('');
   const [futureGoals, setFutureGoals] = useState('');
   const [advice, setAdvice] = useState('');
+
+  // Fetch predefined skills from Firebase
+  useEffect(() => {
+    const fetchSkills = async () => {
+      const skillsCollection = collection(db, 'skills');
+      const skillsSnapshot = await getDocs(skillsCollection);
+      const skillsList = skillsSnapshot.docs.map(doc => doc.data().name);
+      setAllSkills(skillsList);
+    };
+    fetchSkills();
+  }, []);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -40,6 +51,18 @@ function PostForm({ onSubmit }) {
     };
     fetchUserData();
   }, [currentUser]);
+
+  const handleSkillChange = async (event, newValue) => {
+    setSkills(newValue);
+    const newSkills = newValue.filter(skill => !allSkills.includes(skill));
+    
+    // Save any new skills to Firebase
+    for (const skill of newSkills) {
+      const skillRef = collection(db, 'skills');
+      await addDoc(skillRef, { name: skill });
+      setAllSkills(prevSkills => [...prevSkills, skill]);
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -65,7 +88,7 @@ function PostForm({ onSubmit }) {
     setCompany('');
     setPosition('');
     setApplicationProcess('');
-    setSkills('');
+    setSkills([]);
     setInterviewFormat('');
     setChallenges('');
     setSalaryInsights('');
@@ -164,20 +187,23 @@ function PostForm({ onSubmit }) {
         style={{ backgroundColor: 'background.default' }}
       />
 
-      {/* Skills */}
-      <Tooltip title="List key skills or qualifications that helped you secure the job" arrow>
-        <TextField
-          label="Skills and Qualifications"
-          variant="outlined"
-          fullWidth
-          multiline
-          rows={2}
-          value={skills}
-          onChange={(e) => setSkills(e.target.value)}
-          placeholder="E.g., 'Some skills that helped me stand out were...'"
-          sx={{ backgroundColor: 'background.default' }}
-        />
-      </Tooltip>
+      {/* Skills with Autocomplete from Firebase */}
+      <Autocomplete
+        multiple
+        freeSolo
+        options={allSkills}
+        value={skills}
+        onChange={handleSkillChange}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="Skills and Qualifications"
+            variant="outlined"
+            placeholder="Add skills or qualifications"
+            sx={{ backgroundColor: 'background.default' }}
+          />
+        )}
+      />
 
       {/* Interview Process */}
       <Divider sx={{ my: 3 }} />

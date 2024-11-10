@@ -265,21 +265,21 @@ function BlogPost() {
           />
           {section.skills && (
             <Typography
-              variant="body2"
+              variant="body1" // Updated to match main text size
               sx={{ color: theme.palette.text.secondary }}
               dangerouslySetInnerHTML={{ __html: `<strong>Skills:</strong> ${section.skills}` }}
             />
           )}
           {section.challenges && (
             <Typography
-              variant="body2"
+              variant="body1" // Updated to match main text size
               sx={{ color: theme.palette.text.secondary }}
               dangerouslySetInnerHTML={{ __html: `<strong>Challenges:</strong> ${section.challenges}` }}
             />
           )}
           {section.goals && (
             <Typography
-              variant="body2"
+              variant="body1" // Updated to match main text size
               sx={{ color: theme.palette.text.secondary }}
               dangerouslySetInnerHTML={{ __html: `<strong>Goals:</strong> ${section.goals}` }}
             />
