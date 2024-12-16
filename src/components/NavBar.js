@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { AppBar, Toolbar, Typography, Button, Switch, Drawer, IconButton, List, ListItem, ListItemText, Divider, Box } from '@mui/material';
+import { AppBar, Toolbar, Button, Switch, Drawer, IconButton, List, ListItem, ListItemText, Divider, Box } from '@mui/material';
 import { Link } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
 import { useTheme, useMediaQuery } from '@mui/material';
-import logo from '../assets/TitleBlueIE.png'; // Adjust the path to your assets folder if necessary
+import logo from '../assets/Logo1.png'; // Adjust the path to your assets folder if necessary
 
 function Navbar({ toggleTheme, isDarkMode }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -29,7 +29,7 @@ function Navbar({ toggleTheme, isDarkMode }) {
     >
       <Box display="flex" justifyContent="center" mb={2}>
         <Link to="/" onClick={handleLinkClick}>
-          <img src={logo} alt="The Interview Logo" style={{ width: '80px', height: 'auto' }} />
+          <img src={logo} alt="The Interview Logo" style={{ width: '120px', height: 'auto' }} /> {/* Increased width */}
         </Link>
       </Box>
       <Divider sx={{ mb: 2 }} />
@@ -72,10 +72,7 @@ function Navbar({ toggleTheme, isDarkMode }) {
       <Toolbar>
         <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
           <Link to="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', color: 'inherit' }}>
-            <img src={logo} alt="The Interview Logo" style={{ width: '40px', height: 'auto', marginRight: '8px' }} />
-            {/* <Typography variant="h6" sx={{ fontWeight: 700 }}>
-              The Interview
-            </Typography> */}
+            <img src={logo} alt="The Interview Logo" style={{ width: '80px', height: 'auto', marginRight: '8px' }} /> {/* Increased width */}
           </Link>
         </Box>
 

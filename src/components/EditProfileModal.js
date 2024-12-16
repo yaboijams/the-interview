@@ -5,7 +5,7 @@ import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../contexts/AuthContext';
 
-function EditProfileModal({ open, onClose, currentUserData }) {
+function EditProfileModal({ open, onClose, currentUserData, onProfileUpdated }) {
   const { currentUser } = useAuth();
 
   const [name, setName] = useState(currentUserData.name || '');
@@ -21,6 +21,17 @@ function EditProfileModal({ open, onClose, currentUserData }) {
     if (currentUser) {
       const userRef = doc(db, 'users', currentUser.uid);
       await updateDoc(userRef, {
+        name,
+        bio,
+        profilePicture,
+        currentPosition,
+        currentCompany,
+        formerPosition,
+        formerCompany,
+        location,
+      });
+      
+      onProfileUpdated({
         name,
         bio,
         profilePicture,

@@ -85,7 +85,7 @@ function Home() {
       )}
 
       {/* Categories Section */}
-      <Box sx={{ mb: 4, textAlign: 'center' }}>
+      {/* <Box sx={{ mb: 4, textAlign: 'center' }}>
         <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 2 }}>
           Explore Categories
         </Typography>
@@ -105,7 +105,7 @@ function Home() {
             </Grid>
           ))}
         </Grid>
-      </Box>
+      </Box> */}
 
       {/* About Section */}
       <Box sx={{ textAlign: 'center', mb: 4, px: 2 }}>
@@ -122,7 +122,7 @@ function Home() {
       <PostList />
 
       {/* Subscribe CTA */}
-      <Box sx={{ textAlign: 'center', mt: 5 }}>
+      {/* <Box sx={{ textAlign: 'center', mt: 5 }}>
         <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
           Stay Updated
         </Typography>
@@ -140,7 +140,7 @@ function Home() {
         >
           Subscribe Now
         </Button>
-      </Box>
+      </Box> */}
     </Container>
   );
 }
